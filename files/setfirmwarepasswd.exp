@@ -1,0 +1,31 @@
+#!/usr/bin/expect
+
+set encpass UGFzc3dvcmQK
+set pass [exec /bin/echo "$encpass" | base64 --decode]
+
+spawn firmwarepasswd -check
+expect {
+    "Password Enabled: No" {
+         spawn firmwarepasswd -setpasswd
+         expect "Enter new password:"
+         send "$pass\r";
+         expect "Re-enter new password:"
+         send "$pass\r";
+         expect eof
+    }
+    "Password Enabled: Yes" {
+   spawn firmwarepasswd -verify
+   expect "Enter password:"
+   send "$pass\r"
+   expect {
+      "Correct" {
+       expect eof
+       }
+      "Incorrect" {
+        # puts "Password incorrect"
+         exit 1
+            }      
+    }   
+    }
+    }
+exit 0
